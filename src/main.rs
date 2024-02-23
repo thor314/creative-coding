@@ -7,13 +7,17 @@
 
 mod cli;
 mod error;
+mod nannou;
 #[cfg(test)] mod tests;
 mod utils;
+
 use error::MyError;
 use log::info;
 
 fn main() -> Result<(), MyError> {
   let _cli = utils::setup()?;
+
+  _cli.handle();
 
   info!("hello thor");
 
