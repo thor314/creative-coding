@@ -8,7 +8,7 @@ use crate::{cli::MyArgs, error::MyError};
 pub(crate) fn setup() -> Result<MyArgs, MyError> {
   dotenvy::dotenv().ok();
   let args = MyArgs::parse();
-  env_logger::builder().filter_level(args.log_level()).build();
+  env_logger::builder().filter_level(args.log_level()).init();
   std::env::var("DOTENV_OK").with_context(|| anyhow!("failed to load dotenv"))?;
   Ok(args)
 }
