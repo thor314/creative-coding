@@ -1,6 +1,7 @@
 //! https://docs.rs/clap/latest/clap/
 
-use clap::{ArgAction, Args, Parser, Subcommand};
+use clap::{ArgAction, Args, CommandFactory, Parser, Subcommand};
+use clap_complete::{Generator, Shell};
 use log::{debug, trace, LevelFilter};
 
 /// The subcommand handler.
@@ -9,9 +10,9 @@ use log::{debug, trace, LevelFilter};
 /// This struct probably doesn't need to change, make changes to `Subcommands` and the individual
 /// subcommands instead.
 #[derive(Parser, Debug)]
-#[command(name = "creative_coding")]
-#[command(bin_name = "creative_coding")]
-#[clap(about = "creative_coding cli")]
+#[command(name = "creative-coding")]
+#[command(bin_name = "creative-coding")]
+#[clap(about = "creative-coding cli")]
 #[command(author, version)]
 #[command(propagate_version = true)]
 pub struct MyCli {
@@ -20,13 +21,25 @@ pub struct MyCli {
   /// Set the verbosity. Use -v for DEBUG, -vv for TRACE. None for INFO.
   #[arg(long = "verbose", short = 'v', action = ArgAction::Count)]
   pub verbosity: u8,
+  #[arg(short = 'g', long = "generate", value_enum)]
+  generator:     Option<Shell>,
 }
 
 impl MyCli {
   pub fn handle(&self) {
+    if let Some(generator) = self.generator {
+      let mut cmd = Self::command();
+      eprintln!("Generating completion file for {generator:?}...");
+      print_completions(generator, &mut cmd);
+    }
+
     match &self.subcommands {
       Some(subcommands) => subcommands.handle(),
       None => self.handle_default(),
+    }
+
+    fn print_completions<G: Generator>(gen: G, cmd: &mut clap::Command) {
+      clap_complete::generate(gen, cmd, cmd.get_name().to_string(), &mut std::io::stdout());
     }
   }
 
@@ -102,22 +115,16 @@ impl First {
   }
 }
 
-
 #[derive(Parser, Debug)]
 struct Window;
 
 impl Window {
-  pub fn handle(&self) {
-    crate::nannou::window::draw()
-  }
+  pub fn handle(&self) { crate::nannou::window::draw() }
 }
-
 
 #[derive(Parser, Debug)]
 struct Coordinates;
 
 impl Coordinates {
-  pub fn handle(&self) {
-    crate::nannou::coordinates::draw()
-  }
+  pub fn handle(&self) { crate::nannou::coordinates::draw() }
 }
